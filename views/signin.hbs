@@ -1,0 +1,59 @@
+<div>
+  <h1>Login</h1>
+</div>
+<div>
+  <input value="+55" disabled>
+</div>
+<div>
+  <input id="phone-number" placeholder="Número do seu celular">
+</div>
+<div>
+  <button id="submit-sms" type="button">
+    Login via SMS
+  </button>
+</div>
+<div>
+  <form id="signin-success" method="post" action="/login">
+    <input id="csrf" type="hidden" name="csrf">
+    <input id="code" type="hidden" name="code">
+  </form>
+</div>
+
+<script>
+  // initialize Account Kit with CSRF protection
+  window.AccountKit_OnInteractive = function AccountKit_OnInteractive () {
+    AccountKit.init({
+      appId: '{{appId}}',
+      state: '{{csrf}}',
+      version: '{{version}}',
+      fbAppEventsEnabled: true
+    })
+  }
+
+  // login callback
+  function loginCallback (response) {
+    if (response.status === "PARTIALLY_AUTHENTICATED") {
+      // Send code to server to exchange for access token
+      document.querySelector('#code').value = response.code
+      document.querySelector('#csrf').value = response.state
+      document.querySelector('#signin-success').submit()
+    } else if (response.status === "NOT_AUTHENTICATED") {
+      // handle authentication failure
+    } else if (response.status === "BAD_PARAMS") {
+      // handle bad parameters
+    }
+  }
+
+  // phone form submission handler
+  function smsLogin () {
+    const phoneNumber = document.querySelector("#phone-number").value.trim()
+    AccountKit.login('PHONE', { countryCode: '+55', phoneNumber }, loginCallback)
+  }
+
+  window.addEventListener('DOMContentLoaded', function start () {
+    document.querySelector('#submit-sms').addEventListener('click', function onSubmitSMSClicked (event) {
+      event.preventDefault()
+      smsLogin()
+    })
+  })
+</script>
