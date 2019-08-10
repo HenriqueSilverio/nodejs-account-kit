@@ -3,12 +3,17 @@
   "main": "index.js",
   "private": true,
   "scripts": {
+    "start": "-r dotenv-safe/config index.js",
     "debug": "nodemon -r dotenv-safe/config index.js"
   },
   "dependencies": {
+    "@awaitjs/express": "^0.3.0",
     "dotenv-safe": "^6.1.0",
     "express": "^4.17.1",
     "express-handlebars": "^3.1.0",
+    "helmet": "^3.20.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

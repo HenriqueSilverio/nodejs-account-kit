@@ -1,28 +1,35 @@
-const uuid = require('uuid/v4')
+const { addAsync } = require('@awaitjs/express')
 const express = require('express')
 const handlebars = require('express-handlebars')
+const helmet = require('helmet')
+const uuid = require('uuid/v4')
+
+const index = require('./routes/index')
+const login = require('./routes/login')
 
 const csrf = uuid()
-const MeEndpointBaseURL = `https://graph.accountkit.com/${process.env.ACCOUNT_KIT_VERSION}/me`
-const TokenExchangeBaseURL = `https://graph.accountkit.com/${process.env.ACCOUNT_KIT_VERSION}/access_token`
 
-const server = express()
+const server = addAsync(express())
 
 server.set('view engine', '.hbs')
 server.engine('.hbs', handlebars({ extname: '.hbs' }))
 
+server.use(helmet())
 server.use(express.urlencoded({ extended: true }))
 
-server.get('/signin', (req, res) => {
-  res.render('signin', {
-    csrf,
-    appId: process.env.FB_APP_ID,
-    version: process.env.ACCOUNT_KIT_VERSION
-  })
+server.use((req, res, next) => {
+  res.locals.csrf = csrf
+  res.locals.MeEndpointBaseURL = `https://graph.accountkit.com/${process.env.ACCOUNT_KIT_VERSION}/me`
+  res.locals.TokenExchangeBaseURL = `https://graph.accountkit.com/${process.env.ACCOUNT_KIT_VERSION}/access_token`
+  next()
 })
 
-server.post('/signin', (req, res) => {
-  res.render('home')
+server.use(index)
+server.use(login)
+
+server.use((error, req, res, next) => {
+  console.error(error.message)
+  res.render('error')
 })
 
 server.listen(3000, () => {
